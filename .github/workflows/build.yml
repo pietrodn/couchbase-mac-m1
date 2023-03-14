@@ -1,0 +1,23 @@
+jobs:
+  release:
+    name: "Patch and release"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: "Checkout code"
+        run: git clone -b v2.6.12 https://github.com/couchbase/couchnode.git
+      - name: "Patch"
+        run: cp -R couchnode/deps/lcb/gyp_config/mac/x64 couchnode/deps/lcb/gyp_config/mac/arm64
+      - name: "Pack"
+        run: |
+          mkdir -p dist
+          (cd couchnode && npm pack --pack-destination ../dist)
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "couchbase 2.6.12"
+          tag_name: v2.6.12
+          files: ./dist/*
+          body: "Patched version of couchnode for Apple M1 compilation."
